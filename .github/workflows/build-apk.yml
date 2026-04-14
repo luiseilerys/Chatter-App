@@ -3,9 +3,7 @@ name: Build Flutter APK
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch: # Permite ejecutarlo manualmente desde la pestaña "Actions"
+  workflow_dispatch:
 
 jobs:
   build:
@@ -22,16 +20,24 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0' # O la versión que use el proyecto
+          flutter-version: '3.16.9'  # Cambia a la versión que use el proyecto
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Accept Android licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+          # Alternativa si falla: flutter doctor --android-licenses --yes
+
+      - name: Verify Flutter environment
+        run: flutter doctor -v
+
       - name: Build APK
         run: flutter build apk --release
 
-      - name: Upload APK as artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
